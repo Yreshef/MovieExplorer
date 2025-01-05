@@ -14,7 +14,7 @@
 		65F972512D1ECF9B00859063 /* Exceptions for "MovieExplorer" folder in "MovieExplorer" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				System/Info.plist,
 			);
 			target = 65F9723E2D1ECF9900859063 /* MovieExplorer */;
 		};
@@ -147,7 +147,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 66G95X29R7;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = MovieExplorer/Info.plist;
+				INFOPLIST_FILE = MovieExplorer/System/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -175,7 +175,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 66G95X29R7;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = MovieExplorer/Info.plist;
+				INFOPLIST_FILE = MovieExplorer/System/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
