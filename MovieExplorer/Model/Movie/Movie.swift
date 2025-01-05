@@ -8,6 +8,7 @@
 import Foundation
 
 struct Movie: Decodable {
+    
     var adult: Bool
     var backdropPath: String
     var genreIds: [Int]
