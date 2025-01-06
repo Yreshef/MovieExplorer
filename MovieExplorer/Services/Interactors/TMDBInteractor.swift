@@ -8,11 +8,11 @@
 import Foundation
 
 protocol TMDBInteracting {
-    //Add network calls and requests here
+    //TODO: Implement
 }
 
 final class TMDBInteractor: TMDBInteracting {
-    
+    //TODO: Implement
 }
 
 enum TMDBRoute: Route {

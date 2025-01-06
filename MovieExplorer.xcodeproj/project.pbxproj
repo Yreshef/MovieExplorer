@@ -82,7 +82,6 @@
 				63BBBC234BBE42650EDBF6F7 /* Pods-MovieExplorer.debug.xcconfig */,
 				502AABB99EDDB7D868067213 /* Pods-MovieExplorer.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
