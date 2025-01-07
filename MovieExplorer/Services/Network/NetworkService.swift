@@ -15,7 +15,6 @@ protocol NetworkServicing {
 final class NetworkService: NetworkServicing {
     
     let session: URLSession
-    let apiKey: String = APIKeys.movieDBKey
     
     init(session: URLSession = .shared) {
         self.session = session
@@ -23,17 +22,31 @@ final class NetworkService: NetworkServicing {
     
     func fetch<T: Decodable>(_ type: T.Type, from route: NetworkRoutes) -> AnyPublisher<T, NetworkError> {
         
-        guard let url = URL(string: route.urlPath) else {
+        guard var components = URLComponents(string: route.urlPath) else {
+            return Fail(error: NetworkError.invalidURL).eraseToAnyPublisher()
+        }
+        
+        if let parameters = route.parameters {
+            components.queryItems = parameters.map { key, value in
+                URLQueryItem(name: key, value: "\(value)")
+            }
+        }
+        
+        guard let url = components.url else {
             return Fail(error: NetworkError.invalidURL).eraseToAnyPublisher()
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.addValue(apiKey, forHTTPHeaderField: "api_key")
         
         return session
             .dataTaskPublisher(for: request)
             .tryMap { response -> Data in
+                
+                if let dataString = String(data: response.data, encoding: .utf8) {
+                    print("API Response: \(dataString)")
+                    print("-------------END OF API RESPONSE-------------")
+                }
+                
                 guard let resposne = response.response as? HTTPURLResponse else {
                     throw NetworkError.invalidResponse
                 }

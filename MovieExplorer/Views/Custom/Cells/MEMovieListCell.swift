@@ -48,7 +48,7 @@ final class MEMovieListCell: UICollectionViewCell {
     }
     
     public func configure(with movie: Movie) {
-        posterImageView.image = UIImage(named: movie.posterPath) ?? Images.placeholderPoster
+//        posterImageView.image = UIImage(named: movie.posterPath) ?? Images.placeholderPoster
         movieTitle.text = movie.title
     }
 }
