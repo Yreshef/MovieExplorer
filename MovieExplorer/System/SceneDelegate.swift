@@ -15,8 +15,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
-        let rootViewController = configureNavController()
-        window?.rootViewController = rootViewController
+        window?.windowScene = windowScene
+        window?.rootViewController = configureNavController()
         window?.makeKeyAndVisible()
     }
     
@@ -36,10 +36,9 @@ extension SceneDelegate {
     /// Configures and returns a navigation controller with a root VC
     /// - Returns: A fully configured navigation controller with it's root VC
     private func configureNavController() -> UINavigationController {
-        //TODO: Replace placeholder tab bar and nav controller configuration
-        let vc = UINavigationController(rootViewController: UITabBarController())
+        let vc = UINavigationController(rootViewController: METabBarController())
         vc.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
-        vc.navigationBar.topItem?.title = "Wubba Lubba dub-dub"
+        vc.navigationBar.topItem?.title = "MovieExplorer"
         vc.overrideUserInterfaceStyle = .dark
         return vc
         
