@@ -37,7 +37,8 @@ class MovieListViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         configureCollectionView()
-        viewModel.fetchMockData()  //TODO: Remove mock implementation
+//        viewModel.fetchMockData()  //TODO: Remove mock implementation
+        viewModel.fetchMovies()
         collectionView.reloadData()
     }
     

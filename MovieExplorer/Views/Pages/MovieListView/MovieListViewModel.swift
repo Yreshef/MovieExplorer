@@ -6,18 +6,32 @@
 //
 
 import Foundation
+import Combine
 
 class MovieListViewModel {
     
     var movies: [Movie] = []
     let movieService: MovieServicing
+    private var cancellables = Set<AnyCancellable>()
     
     init(movieService: MovieServicing) {
         self.movieService = movieService
     }
     
     func fetchMovies() {
-        //TODO: Implement
+        movieService.fetchMovie()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print("An error has occured: \(error)")
+                }
+            } receiveValue: { [weak self] movie in
+                print(movie)
+            }
+            .store(in: &cancellables)
     }
     
     func fetchMockData() {

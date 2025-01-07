@@ -25,6 +25,7 @@ class METabBarController: UITabBarController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //TODO: Replace with actual implementation of VCs
     private func configure() {
         view.backgroundColor = .systemCyan
         

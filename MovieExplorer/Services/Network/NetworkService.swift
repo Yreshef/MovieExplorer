@@ -15,7 +15,7 @@ protocol NetworkServicing {
 final class NetworkService: NetworkServicing {
     
     let session: URLSession
-    let apiKey = "6e1720a46baa627e179c95d3e747eaf9"
+    let apiKey: String = APIKeys.movieDBKey
     
     init(session: URLSession = .shared) {
         self.session = session
