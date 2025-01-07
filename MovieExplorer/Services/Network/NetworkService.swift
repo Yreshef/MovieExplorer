@@ -37,15 +37,18 @@ final class NetworkService: NetworkServicing {
         }
         
         var request = URLRequest(url: url)
+        request.timeoutInterval = 10
         
         return session
             .dataTaskPublisher(for: request)
             .tryMap { response -> Data in
                 
+                #if DEBUG
                 if let dataString = String(data: response.data, encoding: .utf8) {
                     print("API Response: \(dataString)")
                     print("-------------END OF API RESPONSE-------------")
                 }
+#endif
                 
                 guard let resposne = response.response as? HTTPURLResponse else {
                     throw NetworkError.invalidResponse

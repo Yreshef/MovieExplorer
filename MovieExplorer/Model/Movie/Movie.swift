@@ -13,7 +13,7 @@ struct Movie: Decodable {
     var originalLanguage: String
     var originalTitle: String
     var posterPath: String
-    var releaseDate: String
+    var releaseDate: String //"2023-02-15" - so maybe Date
     var title: String
 
     enum CodingKeys: String, CodingKey {

@@ -6,10 +6,12 @@
 //
 
 import UIKit
+import Combine
 
 class MovieListViewController: UIViewController {
     
     let viewModel: MovieListViewModel
+    private var cancellables = Set<AnyCancellable>()
     
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -37,9 +39,9 @@ class MovieListViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         configureCollectionView()
+        bindViewModel()
 //        viewModel.fetchMockData()  //TODO: Remove mock implementation
         viewModel.fetchMovies()
-        collectionView.reloadData()
     }
     
     private func configureCollectionView() {
@@ -48,6 +50,15 @@ class MovieListViewController: UIViewController {
         collectionView.backgroundColor = .blue
         collectionView.dataSource = self
         collectionView.delegate = self
+    }
+    
+    private func bindViewModel() {
+        viewModel.$movies
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.collectionView.reloadData()
+            }
+            .store(in: &cancellables)
     }
 }
 
