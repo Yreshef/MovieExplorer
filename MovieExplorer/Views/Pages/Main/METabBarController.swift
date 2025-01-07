@@ -9,17 +9,28 @@ import UIKit
 
 class METabBarController: UITabBarController {
     
+    private let dependencyContainer: DependencyContaining
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configure()
     }
     
+    init(container: DependencyContaining) {
+        self.dependencyContainer = container
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     private func configure() {
         view.backgroundColor = .systemCyan
         
-        let firstVC = MovieListViewController()
+        let firstVC = MovieListViewController(movieService: dependencyContainer.movieService)
         firstVC.tabBarItem = UITabBarItem(title: "Home", image: UIImage(systemName: "house"), tag: 0)
-        let secondVC = MovieListViewController()
+        let secondVC = MovieListViewController(movieService: dependencyContainer.movieService)
         secondVC.tabBarItem = UITabBarItem(title: "Not Home", image: UIImage(systemName: "person"), tag: 1)
         let thirdVC = UIViewController()
         thirdVC.view.backgroundColor = .systemBackground

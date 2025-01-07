@@ -15,6 +15,7 @@ protocol NetworkServicing {
 final class NetworkService: NetworkServicing {
     
     let session: URLSession
+    let apiKey = "6e1720a46baa627e179c95d3e747eaf9"
     
     init(session: URLSession = .shared) {
         self.session = session
@@ -26,7 +27,9 @@ final class NetworkService: NetworkServicing {
             return Fail(error: NetworkError.invalidURL).eraseToAnyPublisher()
         }
         
-        let request = URLRequest(url: url)
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue(apiKey, forHTTPHeaderField: "api_key")
         
         return session
             .dataTaskPublisher(for: request)

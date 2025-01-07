@@ -8,7 +8,13 @@
 import Foundation
 
 class MovieListViewModel {
+    
     var movies: [Movie] = []
+    let movieService: MovieServicing
+    
+    init(movieService: MovieServicing) {
+        self.movieService = movieService
+    }
     
     func fetchMovies() {
         //TODO: Implement

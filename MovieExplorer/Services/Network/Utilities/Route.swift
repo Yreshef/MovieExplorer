@@ -13,18 +13,19 @@ protocol Route {
 }
 
 enum NetworkRoutes: Route {
-    case movie
+    
+    case TMDB(route: TMDBRoute)
     
     var urlPath: String {
         switch self {
-        case .movie:
-            return "/movie/"
+        case .TMDB(let route):
+            return route.urlPath
         }
     }
     
     var parameters: [String: Any]? {
         switch self {
-        case .movie: return [:]
+        case .TMDB(let route): route.parameters
         }
     }
 }

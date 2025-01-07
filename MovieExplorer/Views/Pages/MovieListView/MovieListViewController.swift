@@ -9,7 +9,7 @@ import UIKit
 
 class MovieListViewController: UIViewController {
     
-    let viewModel: MovieListViewModel = MovieListViewModel()
+    let viewModel: MovieListViewModel
     
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -23,6 +23,15 @@ class MovieListViewController: UIViewController {
         collectionView.register(MEMovieListCell.self, forCellWithReuseIdentifier: MEMovieListCell.reuseIdentifier)
         return collectionView
     }()
+    
+    init(movieService: MovieServicing) {
+        viewModel = MovieListViewModel(movieService: movieService)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

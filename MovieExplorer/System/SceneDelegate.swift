@@ -36,7 +36,7 @@ extension SceneDelegate {
     /// Configures and returns a navigation controller with a root VC
     /// - Returns: A fully configured navigation controller with it's root VC
     private func configureNavController() -> UINavigationController {
-        let vc = UINavigationController(rootViewController: METabBarController())
+        let vc = UINavigationController(rootViewController: METabBarController(container: dependencyContainer))
         vc.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
         vc.navigationBar.topItem?.title = "MovieExplorer"
         vc.overrideUserInterfaceStyle = .dark
