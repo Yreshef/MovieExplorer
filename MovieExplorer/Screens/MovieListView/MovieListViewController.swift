@@ -7,6 +7,7 @@
 
 import UIKit
 import Combine
+import SwiftUI
 
 class MovieListViewController: UIViewController {
     
@@ -85,6 +86,14 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
             cell.setPosterImage(image)
         }
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let movie = viewModel.movies[indexPath.row]
+        let image = viewModel.images[movie.id] ?? Images.placeholderPoster
+        let movieDetailView = MovieDetailView(movie: movie, moviePosterImage: image)
+        let hostingController = UIHostingController(rootView: movieDetailView)
+        navigationController?.pushViewController(hostingController, animated: true)
     }
 }
 

@@ -8,5 +8,5 @@
 import UIKit
 
 enum Images {
-    static let placeholderPoster = UIImage(named: "placeholderPoster")
+    static let placeholderPoster = UIImage(named: "placeholderPoster") ?? UIImage(systemName: "photo")!
 }
