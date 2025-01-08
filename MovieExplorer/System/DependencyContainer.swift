@@ -11,9 +11,11 @@ protocol DependencyContaining {
     
     var networkService: NetworkServicing { get }
     var movieService: MovieServicing { get }
+    var imageService: ImageServicing { get }
     
     func initializeServices()
     func provideMovieService() -> MovieServicing
+    func provideImageService() -> ImageServicing
 }
 
 final class DependencyContainer: DependencyContaining {
@@ -21,6 +23,7 @@ final class DependencyContainer: DependencyContaining {
     // MARK: Contained services
     internal let networkService: NetworkServicing = NetworkService()
     internal lazy var movieService: MovieServicing = MovieService(networkService: networkService)
+    internal lazy var imageService: ImageServicing = ImageService(networkService: networkService)
     
     init() {
         initializeServices()
@@ -32,5 +35,9 @@ final class DependencyContainer: DependencyContaining {
     
     func provideMovieService() -> MovieServicing {
         return movieService
+    }
+    
+    func provideImageService() -> ImageServicing {
+        return imageService
     }
 }

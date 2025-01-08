@@ -26,8 +26,8 @@ class MovieListViewController: UIViewController {
         return collectionView
     }()
     
-    init(movieService: MovieServicing) {
-        viewModel = MovieListViewModel(movieService: movieService)
+    init(movieService: MovieServicing, imageService: ImageServicing) {
+        viewModel = MovieListViewModel(movieService: movieService, imageService: imageService)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -46,13 +46,20 @@ class MovieListViewController: UIViewController {
     private func configureCollectionView() {
         view.addSubview(collectionView)
         collectionView.frame = view.bounds
-        collectionView.backgroundColor = .blue
+        collectionView.backgroundColor = .systemBackground
         collectionView.dataSource = self
         collectionView.delegate = self
     }
     
     private func bindViewModel() {
         viewModel.$movies
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.collectionView.reloadData()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$images
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.collectionView.reloadData()
@@ -73,9 +80,11 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
         }
         let movie = viewModel.movies[indexPath.item]
         cell.configure(with: movie)
+        
+        if let image = viewModel.images[movie.id] {
+            cell.setPosterImage(image)
+        }
         return cell
     }
-    
-    
 }
 
