@@ -8,6 +8,14 @@
 import UIKit
 import Combine
 
+/*/
+ TMDb supports various image sizes. Common sizes include:
+ Posters: w92, w154, w185, w342, w500, w780, original
+ Backdrops: w300, w780, w1280, original
+ Profiles: w45, w185, h632, original
+ Logos: w45, w92, w154, w185, w300, w500, original
+ */
+
 protocol ImageServicing {
     func fetchImage(size: String, from path: String) -> AnyPublisher<Image, NetworkError>
     
@@ -22,11 +30,16 @@ class ImageService: ImageServicing {
         self.networkService = networkService
     }
     
+    /// Fetches an image from the specified path and size.
+    /// This function constructs the URL for the image based on the provided size and path parameters,
+    /// and uses the network service to fetch the image data, which is then returned as a `Publisher`.
+    /// - Parameters:
+    ///   - size: A string representing the size of the image (e.g., "w500" for a 500px wide image).
+    ///   - path: The path to the image, typically provided by an API (e.g., "/path/to/image.jpg").
+    /// - Returns: A publisher that emits the fetched image as an `Image` or a `NetworkError` in case of failure.
     func fetchImage(size: String, from path: String) -> AnyPublisher<Image, NetworkError> {
         networkService.fetch(Image.self, from: .TMDBImage(route: .image(size: size, path: path)))
     }
-    
-    
 }
 
 enum TMDBImageRoute: Route {
