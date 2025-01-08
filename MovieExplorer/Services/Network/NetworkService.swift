@@ -60,7 +60,6 @@ final class NetworkService: NetworkServicing {
                 
                 return response.data
             }
-//            .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 NetworkError.decodingFailure
             }

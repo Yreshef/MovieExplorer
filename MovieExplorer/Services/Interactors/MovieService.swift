@@ -22,11 +22,9 @@ final class MovieService: MovieServicing {
         self.networkService = networkService
     }
     
-    //TODO: Replace with actual implementation
     func fetchMovie() -> AnyPublisher<Movie, NetworkError> {
-        networkService.fetch(Movie.self, from: .TMDB(route: .gladiatorII))
+        networkService.fetch(Movie.self, from: .TMDB(route: .gladiatorII))  //TODO: replace with different route
             .tryMap { data in
-                // Decode the raw JSON data into MovieResponse (or Movie if it's a single object)
                 let decoder = JSONDecoder()
                 do {
                     return try decoder.decode(Movie.self, from: data)
@@ -35,14 +33,13 @@ final class MovieService: MovieServicing {
                 }
             }
             .mapError { error in
-                // Map the error to your custom NetworkError type
                 if let networkError = error as? NetworkError {
                     return networkError
                 } else {
-                    return NetworkError.requestFailure(statusCode: -1) // Handle general error
+                    return NetworkError.requestFailure(statusCode: -1)
                 }
             }
-            .eraseToAnyPublisher() // Return a publisher of Movie or error
+            .eraseToAnyPublisher()
     }
 }
 
