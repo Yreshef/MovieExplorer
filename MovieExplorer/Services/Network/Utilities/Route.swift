@@ -15,17 +15,19 @@ protocol Route {
 enum NetworkRoutes: Route {
     
     case TMDB(route: TMDBRoute)
+    case TMDBImage(route: TMDBImageRoute)
     
     var urlPath: String {
         switch self {
-        case .TMDB(let route):
-            return route.urlPath
+        case .TMDB(let route): return route.urlPath
+        case .TMDBImage(let route): return route.urlPath
         }
     }
     
     var parameters: [String: Any]? {
         switch self {
         case .TMDB(let route): route.parameters
+        case .TMDBImage(let route): route.parameters
         }
     }
 }

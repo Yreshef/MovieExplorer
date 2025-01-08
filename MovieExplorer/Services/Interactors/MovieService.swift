@@ -37,10 +37,9 @@ enum TMDBRoute: Route {
         APIKeys.movieDBKey
     }//TODO: Change to env. variable later on
 
-    
     case movie
     case gladiatorII
-    
+        
     var urlPath: String {
         switch self {
             case .movie: return path + "movie/"
