@@ -14,4 +14,5 @@ enum NetworkError: Error {
     case decodingFailure
     case unableToComplete
     case requestFailure(statusCode: Int)
+    case unknown
 }
