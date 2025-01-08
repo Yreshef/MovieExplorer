@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 protocol NetworkServicing {
-    func fetch<T: Decodable>(_ type: T.Type, from route: NetworkRoutes) -> AnyPublisher<T, NetworkError>
+    func fetch<T: Decodable>(_ type: T.Type, from route: NetworkRoutes) -> AnyPublisher<Data, NetworkError>
 }
 
 final class NetworkService: NetworkServicing {
@@ -20,7 +20,7 @@ final class NetworkService: NetworkServicing {
         self.session = session
     }
     
-    func fetch<T: Decodable>(_ type: T.Type, from route: NetworkRoutes) -> AnyPublisher<T, NetworkError> {
+    func fetch<T: Decodable>(_ type: T.Type, from route: NetworkRoutes) -> AnyPublisher<Data, NetworkError> {
         
         guard var components = URLComponents(string: route.urlPath) else {
             return Fail(error: NetworkError.invalidURL).eraseToAnyPublisher()
@@ -60,7 +60,7 @@ final class NetworkService: NetworkServicing {
                 
                 return response.data
             }
-            .decode(type: T.self, decoder: JSONDecoder())
+//            .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 NetworkError.decodingFailure
             }
