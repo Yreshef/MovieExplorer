@@ -67,6 +67,19 @@ class MovieListViewController: UIViewController {
             }
             .store(in: &cancellables)
     }
+    
+    private func prepareDetailView(for movie: Movie, with image: UIImage) -> UIHostingController<MovieDetailView> {
+        let movieDetailView = MovieDetailView(movie: movie, moviePosterImage: image) {
+            //            self.dismiss(animated: true)
+            self.navigationController?.popToRootViewController(animated: true)
+        }
+        let hostingController = UIHostingController(rootView: movieDetailView)
+        hostingController.navigationItem.setHidesBackButton(true, animated: false)
+        hostingController.navigationItem.title = movie.title
+//        hostingController.modalPresentationStyle = .fullScreen
+//        hostingController.modalTransitionStyle = .crossDissolve
+        return hostingController
+    }
 }
 
 extension MovieListViewController: UICollectionViewDataSource, UICollectionViewDelegate {
@@ -91,9 +104,8 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let movie = viewModel.movies[indexPath.row]
         let image = viewModel.images[movie.id] ?? Images.placeholderPoster
-        let movieDetailView = MovieDetailView(movie: movie, moviePosterImage: image)
-        let hostingController = UIHostingController(rootView: movieDetailView)
-        navigationController?.pushViewController(hostingController, animated: true)
+        let hostingController = prepareDetailView(for: movie, with: image)
+//        self.present(prepareDetailView(for: movie, with: image), animated: true)
+        self.navigationController?.pushViewController(hostingController, animated: true)
     }
 }
-
