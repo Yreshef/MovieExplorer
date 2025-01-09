@@ -9,12 +9,12 @@ import SwiftUI
 
 struct MEImage: View {
     
+    var moviePosterImage: UIImage?
+    
     var body: some View {
-        Image(uiImage: Images.placeholderPoster)
+        Image(uiImage: moviePosterImage ?? Images.placeholderPoster)
             .resizable()
             .scaledToFit()
-//            .aspectRatio(contentMode: .fit)
-//            .frame(width: 120, height: 90)
             .cornerRadius(8)
     }
 }

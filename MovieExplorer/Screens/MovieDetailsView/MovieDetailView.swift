@@ -15,7 +15,7 @@ struct MovieDetailView: View {
     var body: some View {
         ScrollView {
             VStack {
-                MEImage()
+                MEImage(moviePosterImage: moviePosterImage)
                     .frame(height: 350)
                     .shadow(radius: 15)
                     .padding(.top, 20)
@@ -39,26 +39,3 @@ struct MovieDetailView: View {
 #Preview {
     MovieDetailView(movie: MockData.sampleMovie, moviePosterImage: Images.placeholderPoster)
 }
-
-
-//ScrollView {
-//    VStack {
-//        MEImage()
-//            .frame(height: 300)
-//            .shadow(radius: 10)
-//        TitleLabel(label: movie.originalTitle)
-//        GeometryReader { geometry in
-//            BodyLabel(label: movie.overview)
-//                .frame(maxWidth: min(geometry.size.width-40, 600), alignment: .leading)
-//        }
-//    }
-//    .frame(maxWidth: .infinity)
-//    .background(
-//        RoundedRectangle(cornerRadius: 16)
-//            .fill(Color(UIColor.secondarySystemBackground))
-//            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-//    )
-//}
-//.background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
-//.navigationTitle(movie.title)
-//.navigationBarTitleDisplayMode(.inline)
