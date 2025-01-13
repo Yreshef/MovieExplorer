@@ -21,7 +21,7 @@ class MovieListViewModel {
         self.imageService = imageService
     }
     
-    func fetchMovies() {
+    public func fetchMovies() {
         DispatchQueue.main.async {
             self.movieService.fetchMovie()
                 .receive(on: DispatchQueue.main)
@@ -33,12 +33,15 @@ class MovieListViewModel {
                         print("An error has occured: \(error)")
                     }
                 } receiveValue: { [weak self] movie in
-//                    print(movie)
                     self?.movies.append(movie)
                     self?.fetchImage(for: movie)
                 }
                 .store(in: &self.cancellables)
         }
+    }
+    
+    public func fetchPopularMovies() {
+        
     }
     
     private func fetchImage(for movie: Movie) {

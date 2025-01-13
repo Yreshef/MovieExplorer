@@ -11,7 +11,7 @@ final class MEMovieListCell: UICollectionViewCell {
     
     static let reuseIdentifier = "MEMovieListCellID"
     let posterImageView = MEMoviePosterImageView(frame: .zero)
-    let movieTitle = METitleLabel(textAlignement: .left, fontSize: 26)
+    let movieTitle = METitleLabel(textAlignment: .left, fontSize: 26)
     
     override init(frame: CGRect) {
         super.init(frame: frame)

@@ -5,14 +5,17 @@
 //  Created by Yohai on 27/12/2024.
 //
 
-import UIKit
-import Combine
+//import UIKit
 import SwiftUI
+import Combine
 
 class MovieListViewController: UIViewController {
     
     let viewModel: MovieListViewModel
     private var cancellables = Set<AnyCancellable>()
+//    private var filteredMovies: [Movie] = []
+
+    private let searchController = UISearchController(searchResultsController: nil)
     
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -27,6 +30,8 @@ class MovieListViewController: UIViewController {
         return collectionView
     }()
     
+    // MARK: Init
+
     init(movieService: MovieServicing, imageService: ImageServicing) {
         viewModel = MovieListViewModel(movieService: movieService, imageService: imageService)
         super.init(nibName: nil, bundle: nil)
@@ -38,10 +43,23 @@ class MovieListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        configureCollectionView()
+        configureUI()
         bindViewModel()
         viewModel.fetchMovies()
+    }
+    
+    // MARK: Methods
+    
+    private func configureUI() {
+        view.backgroundColor = .systemBackground
+        
+        configureCollectionView()
+        
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search Movies"
+        navigationItem.searchController = searchController
+        definesPresentationContext = true
     }
     
     private func configureCollectionView() {
@@ -68,6 +86,10 @@ class MovieListViewController: UIViewController {
             .store(in: &cancellables)
     }
     
+    private func fetchPopularmovies() {
+        viewModel.fetchPopularMovies()
+    }
+    
     private func prepareDetailView(for movie: Movie, with image: UIImage) -> UIHostingController<MovieDetailView> {
         let movieDetailView = MovieDetailView(movie: movie, moviePosterImage: image) {
             //            self.dismiss(animated: true)
@@ -76,11 +98,11 @@ class MovieListViewController: UIViewController {
         let hostingController = UIHostingController(rootView: movieDetailView)
         hostingController.navigationItem.setHidesBackButton(true, animated: false)
         hostingController.navigationItem.title = movie.title
-//        hostingController.modalPresentationStyle = .fullScreen
-//        hostingController.modalTransitionStyle = .crossDissolve
         return hostingController
     }
 }
+
+// MARK: CollectionView Delegate&Data Source
 
 extension MovieListViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     
@@ -105,7 +127,38 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
         let movie = viewModel.movies[indexPath.row]
         let image = viewModel.images[movie.id] ?? Images.placeholderPoster
         let hostingController = prepareDetailView(for: movie, with: image)
-//        self.present(prepareDetailView(for: movie, with: image), animated: true)
         self.navigationController?.pushViewController(hostingController, animated: true)
+    }
+}
+
+// MARK: Search Results Extension
+
+extension MovieListViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let query = searchController.searchBar.text, !query.isEmpty else {
+//            filteredMovies = []
+            return
+        }
+        searchMovies(query)
+    }
+    
+    private func searchMovies(_ query: String) {
+        viewModel.movieService.fetchMovie()
+            .sink { [weak self] completion in
+                switch completion {
+                case .finished: break
+                case .failure(let error):
+                    print("An error has occured: \(error)")
+                    self?.presentMEAlertOnMainThread(title: "An error has occured",
+                                                     message: "Connection has failed, unable to fetch movies",
+                                                     buttonTitle: "Ok")
+                }
+            } receiveValue: { [weak self] movie in
+                DispatchQueue.main.async {
+//                    self?.filteredMovies.append(movie)
+                    self?.collectionView.reloadData()
+                }
+            }
+            .store(in: &cancellables)
     }
 }

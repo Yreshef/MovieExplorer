@@ -30,13 +30,14 @@ class METabBarController: UITabBarController {
         view.backgroundColor = .systemCyan
         
         let firstVC = MovieListViewController(movieService: dependencyContainer.provideMovieService(), imageService: dependencyContainer.provideImageService())
-        firstVC.tabBarItem = UITabBarItem(title: "Home", image: UIImage(systemName: "house"), tag: 0)
+        let firstNC = UINavigationController(rootViewController: firstVC)
+        firstVC.tabBarItem = UITabBarItem(title: "Home", image: UIImage(systemName: "movieclapper.fill"), tag: 0)
         let secondVC = MovieListViewController(movieService: dependencyContainer.provideMovieService(), imageService: dependencyContainer.provideImageService())
-        secondVC.tabBarItem = UITabBarItem(title: "Not Home", image: UIImage(systemName: "person"), tag: 1)
+        secondVC.tabBarItem = UITabBarItem(title: "Not Home", image: UIImage(systemName: "popcorn.fill"), tag: 1)
         let thirdVC = UIViewController()
         thirdVC.view.backgroundColor = .systemBackground
         thirdVC.tabBarItem = UITabBarItem(title: "Not Home Alone", image: UIImage(systemName: "gear"), tag: 2)
-        viewControllers = [firstVC, secondVC, thirdVC]
+        viewControllers = [firstNC, secondVC, thirdVC]
         
         //        let appearance = UITabBarAppearance()
         //
