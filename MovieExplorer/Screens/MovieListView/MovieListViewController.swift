@@ -5,15 +5,20 @@
 //  Created by Yohai on 27/12/2024.
 //
 
-//import UIKit
+import UIKit
 import SwiftUI
 import Combine
+
+enum MovieListSection: Hashable {
+    case movies
+}
 
 class MovieListViewController: UIViewController {
     
     let viewModel: MovieListViewModel
+    var dataSource: UICollectionViewDiffableDataSource<MovieListSection, Movie>!
+    
     private var cancellables = Set<AnyCancellable>()
-//    private var filteredMovies: [Movie] = []
 
     private let searchController = UISearchController(searchResultsController: nil)
     
@@ -26,7 +31,7 @@ class MovieListViewController: UIViewController {
         layout.itemSize = CGSize(width: self.view.frame.width, height: 100)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.register(MEMovieListCell.self, forCellWithReuseIdentifier: MEMovieListCell.reuseIdentifier)
+        collectionView.register(MovieListCell.self, forCellWithReuseIdentifier: MovieListCell.reuseIdentifier)
         return collectionView
     }()
     
@@ -45,7 +50,7 @@ class MovieListViewController: UIViewController {
         super.viewDidLoad()
         configureUI()
         bindViewModel()
-        viewModel.fetchMovies()
+//        viewModel.fetchMovies()
     }
     
     // MARK: Methods
@@ -66,24 +71,41 @@ class MovieListViewController: UIViewController {
         view.addSubview(collectionView)
         collectionView.frame = view.bounds
         collectionView.backgroundColor = .systemBackground
-        collectionView.dataSource = self
+//        collectionView.dataSource = self
         collectionView.delegate = self
+        configureDataSource()
+    }
+    
+    private func configureDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<MovieListSection, Movie>(collectionView: collectionView) { (collectionView, indexPath, movie) -> MovieListCell in
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MovieListCell.reuseIdentifier, for: indexPath) as! MovieListCell
+            cell.configure(with: movie)
+            return cell
+        }
     }
     
     private func bindViewModel() {
         viewModel.$movies
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.collectionView.reloadData()
+            .sink { [weak self] movies in
+//                self?.collectionView.reloadData()
+                self?.updateSnapshot(with: movies)
             }
             .store(in: &cancellables)
         
         viewModel.$images
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.collectionView.reloadData()
+//                self?.collectionView.reloadData()
             }
             .store(in: &cancellables)
+    }
+    
+    private func updateSnapshot(with movies: [Movie]) {
+        var snapshot = NSDiffableDataSourceSnapshot<MovieListSection, Movie>()
+        snapshot.appendSections([.movies])
+        snapshot.appendItems(movies)
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
     
     private func fetchPopularmovies() {
@@ -111,7 +133,7 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MEMovieListCell.reuseIdentifier, for: indexPath) as? MEMovieListCell else {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MovieListCell.reuseIdentifier, for: indexPath) as? MovieListCell else {
             return UICollectionViewCell()
         }
         let movie = viewModel.movies[indexPath.item]

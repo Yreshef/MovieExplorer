@@ -1,5 +1,5 @@
 //
-//  MEMovieListCell.swift
+//  MovieListCell.swift
 //  MovieExplorer
 //
 //  Created by Yohai on 07/01/2025.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class MEMovieListCell: UICollectionViewCell {
+final class MovieListCell: UICollectionViewCell {
     
     static let reuseIdentifier = "MEMovieListCellID"
     let posterImageView = MEMoviePosterImageView(frame: .zero)
