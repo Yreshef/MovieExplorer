@@ -10,6 +10,7 @@ import UIKit
 class METabBarController: UITabBarController {
     
     private let dependencyContainer: DependencyContaining
+    private let movieListFactory: MovieListViewControllerFactory
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,6 +19,7 @@ class METabBarController: UITabBarController {
     
     init(container: DependencyContaining) {
         self.dependencyContainer = container
+        self.movieListFactory = MovieListViewControllerFactory(dependencyContainer: dependencyContainer)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -28,11 +30,10 @@ class METabBarController: UITabBarController {
     //TODO: Replace with actual implementation of VCs
     private func configure() {
         view.backgroundColor = .systemCyan
-        
-        let firstVC = MovieListViewController(movieService: dependencyContainer.provideMovieService(), imageService: dependencyContainer.provideImageService())
+        let firstVC = movieListFactory.createMovieListViewController()
         let firstNC = UINavigationController(rootViewController: firstVC)
         firstVC.tabBarItem = UITabBarItem(title: "Home", image: UIImage(systemName: "movieclapper.fill"), tag: 0)
-        let secondVC = MovieListViewController(movieService: dependencyContainer.provideMovieService(), imageService: dependencyContainer.provideImageService())
+        let secondVC = movieListFactory.createMovieListViewController()
         secondVC.tabBarItem = UITabBarItem(title: "Not Home", image: UIImage(systemName: "popcorn.fill"), tag: 1)
         let thirdVC = UIViewController()
         thirdVC.view.backgroundColor = .systemBackground

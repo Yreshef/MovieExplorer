@@ -29,17 +29,19 @@ class MovieListViewModel {
     
     let movieService: MovieServicing
     let imageService: ImageServicing
+    let imageCacheService: any ImageCacheServicing
     
-    init(movieService: MovieServicing, imageService: ImageServicing) {
+    init(movieService: MovieServicing, imageService: ImageServicing, imageCacheService: any ImageCacheServicing) {
         self.movieService = movieService
         self.imageService = imageService
+        self.imageCacheService = imageCacheService
         setupSearchQueryObject()
         fetchPopularMovies()
     }
     
     private func setupSearchQueryObject() {
         searchQuerySubject
-            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main) // Wait 500ms after typing stops
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main) 
             .removeDuplicates() // Avoid duplicate requests if the query hasn't changed
             .sink(receiveValue: { [weak self] query in
                 self?.searchMovie(query: query)
@@ -99,7 +101,6 @@ class MovieListViewModel {
     
     private func fetchImage(for movie: Movie) {
         guard let posterPath = movie.posterPath else { return }
-        
         imageService.fetchImage(size: "w500", from: posterPath)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] completion in
@@ -114,10 +115,6 @@ class MovieListViewModel {
                 
                 self.images[movie.id] = image
                 self.notifyImageUpdate(for: movie.id)
-//                var updatedMovie = movie
-//                updatedMovie.posterImage = image
-//                
-//                self.updatedMovie = updatedMovie
             }
             .store(in: &cancellables)
     }

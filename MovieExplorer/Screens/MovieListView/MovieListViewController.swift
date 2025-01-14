@@ -37,8 +37,10 @@ class MovieListViewController: UIViewController {
     
     // MARK: Init
 
-    init(movieService: MovieServicing, imageService: ImageServicing) {
-        viewModel = MovieListViewModel(movieService: movieService, imageService: imageService)
+    init(movieService: MovieServicing, imageService: ImageServicing, imageCacheService: any ImageCacheServicing) {
+        viewModel = MovieListViewModel(movieService: movieService,
+                                       imageService: imageService,
+                                       imageCacheService: imageCacheService)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -80,8 +82,6 @@ class MovieListViewController: UIViewController {
             cell.configure(with: movie)
             return cell
         }
-        
-        
     }
     
     private func bindViewModel() {
@@ -119,20 +119,6 @@ class MovieListViewController: UIViewController {
     private func fetchPopularmovies() {
         viewModel.fetchPopularMovies()
     }
-    
-//    private func updateSnapshot(with movie: Movie) {
-//        var snapshot = dataSource.snapshot()
-//
-//        let movieItems = snapshot.itemIdentifiers(inSection: .movies)
-//        
-//        if let existingMovie = movieItems.first(where: { $0.id == movie.id }) {
-//              snapshot.deleteItems([existingMovie])
-//              snapshot.appendItems([movie], toSection: .movies)
-//          }
-//
-//        dataSource.apply(snapshot, animatingDifferences: true)
-//    }
-
     
     private func prepareDetailView(for movie: Movie, with image: UIImage) -> UIHostingController<MovieDetailView> {
         let movieDetailView = MovieDetailView(movie: movie, moviePosterImage: image) {

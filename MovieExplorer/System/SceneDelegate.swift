@@ -32,7 +32,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 
 extension SceneDelegate {
-    
     /// Configures and returns a navigation controller with a root VC
     /// - Returns: A fully configured navigation controller with it's root VC
     private func configureNavController() -> UINavigationController {
@@ -41,6 +40,5 @@ extension SceneDelegate {
         vc.navigationBar.topItem?.title = "MovieExplorer"
         vc.overrideUserInterfaceStyle = .dark
         return vc
-        
     }
 }

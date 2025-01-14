@@ -13,13 +13,9 @@ protocol DependencyContaining {
     var movieService: MovieServicing { get }
     var imageService: ImageServicing { get }
     var imageCacheService: any ImageCacheServicing { get }
-    
-    func initializeServices()
-    func provideMovieService() -> MovieServicing
-    func provideImageService() -> ImageServicing
 }
 
-final class DependencyContainer: DependencyContaining {    
+final class DependencyContainer: DependencyContaining {
     
     // MARK: Contained services
     internal let networkService: NetworkServicing = NetworkService()
@@ -27,20 +23,5 @@ final class DependencyContainer: DependencyContaining {
     internal lazy var imageService: ImageServicing = ImageService(networkService: networkService)
     internal let imageCacheService: any ImageCacheServicing = ImageCacheService(cacheService: CacheService<Int, UIImage>())
 
-    
-    init() {
-        initializeServices()
-    }
-    
-    func initializeServices() {
-        //Initialize here any services that require a manual launch.
-    }
-    
-    func provideMovieService() -> MovieServicing {
-        return movieService
-    }
-    
-    func provideImageService() -> ImageServicing {
-        return imageService
-    }
+    init() { }
 }
