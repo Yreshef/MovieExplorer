@@ -50,7 +50,6 @@ class MovieListViewController: UIViewController {
         super.viewDidLoad()
         configureUI()
         bindViewModel()
-//        viewModel.fetchMovies()
     }
     
     // MARK: Methods
@@ -71,7 +70,6 @@ class MovieListViewController: UIViewController {
         view.addSubview(collectionView)
         collectionView.frame = view.bounds
         collectionView.backgroundColor = .systemBackground
-//        collectionView.dataSource = self
         collectionView.delegate = self
         configureDataSource()
     }
@@ -82,23 +80,33 @@ class MovieListViewController: UIViewController {
             cell.configure(with: movie)
             return cell
         }
+        
+        
     }
     
     private func bindViewModel() {
         viewModel.$movies
             .receive(on: DispatchQueue.main)
             .sink { [weak self] movies in
-//                self?.collectionView.reloadData()
                 self?.updateSnapshot(with: movies)
             }
             .store(in: &cancellables)
-        
-        viewModel.$images
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-//                self?.collectionView.reloadData()
+        viewModel.imageUpdatePublisher
+            .sink { [weak self] movieId in
+                self?.updateCell(for: movieId)
             }
             .store(in: &cancellables)
+    }
+    
+    private func updateCell(for movieId: Int) {
+        guard let index = viewModel.movies.firstIndex(where: { $0.id == movieId}) else { return }
+        let indexPath = IndexPath(item: index, section: 0)
+        
+        guard let cell = collectionView.cellForItem(at: indexPath) as? MovieListCell else { return }
+        
+        if let image = viewModel.images[movieId] {
+            cell.setPosterImage(image)
+        }
     }
     
     private func updateSnapshot(with movies: [Movie]) {
@@ -111,6 +119,20 @@ class MovieListViewController: UIViewController {
     private func fetchPopularmovies() {
         viewModel.fetchPopularMovies()
     }
+    
+//    private func updateSnapshot(with movie: Movie) {
+//        var snapshot = dataSource.snapshot()
+//
+//        let movieItems = snapshot.itemIdentifiers(inSection: .movies)
+//        
+//        if let existingMovie = movieItems.first(where: { $0.id == movie.id }) {
+//              snapshot.deleteItems([existingMovie])
+//              snapshot.appendItems([movie], toSection: .movies)
+//          }
+//
+//        dataSource.apply(snapshot, animatingDifferences: true)
+//    }
+
     
     private func prepareDetailView(for movie: Movie, with image: UIImage) -> UIHostingController<MovieDetailView> {
         let movieDetailView = MovieDetailView(movie: movie, moviePosterImage: image) {
@@ -138,10 +160,6 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
         }
         let movie = viewModel.movies[indexPath.item]
         cell.configure(with: movie)
-        
-        if let image = viewModel.images[movie.id] {
-            cell.setPosterImage(image)
-        }
         return cell
     }
     
@@ -157,30 +175,10 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
 
 extension MovieListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        guard let query = searchController.searchBar.text, !query.isEmpty else {
-//            filteredMovies = []
+        guard let query = searchController.searchBar.text,
+              !query.isEmpty else {
             return
-        }
-        searchMovies(query)
-    }
-    
-    private func searchMovies(_ query: String) {
-        viewModel.movieService.fetchMovie()
-            .sink { [weak self] completion in
-                switch completion {
-                case .finished: break
-                case .failure(let error):
-                    print("An error has occured: \(error)")
-                    self?.presentMEAlertOnMainThread(title: "An error has occured",
-                                                     message: "Connection has failed, unable to fetch movies",
-                                                     buttonTitle: "Ok")
-                }
-            } receiveValue: { [weak self] movie in
-                DispatchQueue.main.async {
-//                    self?.filteredMovies.append(movie)
-                    self?.collectionView.reloadData()
-                }
-            }
-            .store(in: &cancellables)
+              }
+        viewModel.updateSearchQuery(query: query)
     }
 }

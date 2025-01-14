@@ -17,9 +17,15 @@ class MovieListViewModel {
     
     @Published var movies: [Movie] = []
     @Published var state: MovieListState = .popularMovies
+    @Published var updatedMovie: Movie?
     @Published var favorites: [Movie] = []
     @Published var images: [Int: UIImage] = [:]
+    
+    private var searchQuerySubject = PassthroughSubject<String, Never>()
+    let imageUpdatePublisher = PassthroughSubject<Int, Never>()
+    
     private var cancellables = Set<AnyCancellable>()
+
     
     let movieService: MovieServicing
     let imageService: ImageServicing
@@ -27,27 +33,43 @@ class MovieListViewModel {
     init(movieService: MovieServicing, imageService: ImageServicing) {
         self.movieService = movieService
         self.imageService = imageService
+        setupSearchQueryObject()
         fetchPopularMovies()
     }
     
-//    public func fetchMovies() {
-//        DispatchQueue.main.async {
-//            self.movieService.fetchMovie()
-//                .receive(on: DispatchQueue.main)
-//                .sink { [weak self] completion in
-//                    switch completion {
-//                    case .finished:
-//                        break
-//                    case .failure(let error):
-//                        print("An error has occured: \(error)")
-//                    }
-//                } receiveValue: { [weak self] movie in
-//                    self?.movies.append(movie)
-//                    self?.fetchImage(for: movie)
-//                }
-//                .store(in: &self.cancellables)
-//        }
-//    }
+    private func setupSearchQueryObject() {
+        searchQuerySubject
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main) // Wait 500ms after typing stops
+            .removeDuplicates() // Avoid duplicate requests if the query hasn't changed
+            .sink(receiveValue: { [weak self] query in
+                self?.searchMovie(query: query)
+            })
+            .store(in: &cancellables)
+    }
+    
+    public func searchMovie(query: String) {
+        if query.isEmpty {
+            fetchPopularMovies()
+            return
+        }
+        movieService.fetchMovie(query)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error):
+                    print("Error searching movies: \(error)")
+                case .finished:
+                    break
+                }
+            }, receiveValue: { [weak self] movies in
+                self?.state = .searchResults
+                self?.movies = movies.results
+            })
+            .store(in: &cancellables)
+    }
+    
+    public func updateSearchQuery(query: String) {
+        searchQuerySubject.send(query)
+    }
     
     public func fetchPopularMovies() {
         self.movieService.fetchPopularMovies()
@@ -62,6 +84,7 @@ class MovieListViewModel {
             } receiveValue: { [weak self] movies in
                 self?.state = .popularMovies
                 self?.movies = movies.results
+                self?.fetchImage(for: movies.results)
             }
             .store(in: &cancellables)
     }
@@ -87,9 +110,26 @@ class MovieListViewModel {
                     print("An error has occured: \(error)")
                 }
             } receiveValue: { [weak self] image in
-                self?.images[movie.id] = image
+                guard let self = self else { return }
+                
+                self.images[movie.id] = image
+                self.notifyImageUpdate(for: movie.id)
+//                var updatedMovie = movie
+//                updatedMovie.posterImage = image
+//                
+//                self.updatedMovie = updatedMovie
             }
             .store(in: &cancellables)
+    }
+    
+    private func notifyImageUpdate(for movieID: Int) {
+        imageUpdatePublisher.send(movieID)
+    }
+    
+    private func fetchImage(for movies: [Movie]) {
+        for movie in movies {
+            fetchImage(for: movie)
+        }
     }
     
     func fetchMockData() {

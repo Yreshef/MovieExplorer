@@ -40,8 +40,13 @@ final class MovieListCell: UICollectionViewCell {
     }
     
     public func configure(with movie: Movie) {
-        posterImageView.image = Images.placeholderPoster
         movieTitle.text = movie.title
+        
+        if let image = movie.posterImage {
+            setPosterImage(image)
+        } else {
+            posterImageView.image = Images.placeholderPoster
+        }
     }
     
     public func setPosterImage(_ image: UIImage) {

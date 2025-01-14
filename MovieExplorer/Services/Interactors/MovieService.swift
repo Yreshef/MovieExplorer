@@ -11,8 +11,9 @@ import Combine
 protocol MovieServicing {
     var networkService: NetworkServicing { get }
     
-    func fetchMovie() -> AnyPublisher<Movie, NetworkError>
+//    func fetchMovie() -> AnyPublisher<Movie, NetworkError>
     func fetchPopularMovies() -> AnyPublisher<ManyMoviesResponse, NetworkError>
+    func fetchMovie(_ query: String) -> AnyPublisher<ManyMoviesResponse, NetworkError>
 }
 
 final class MovieService: MovieServicing {
@@ -43,12 +44,12 @@ final class MovieService: MovieServicing {
             .eraseToAnyPublisher()
     }
     
-    func fetchMovie() -> AnyPublisher<Movie, NetworkError> {
-        networkService.fetch(Movie.self, from: .TMDB(route: .gladiatorII))  //TODO: replace with different route
+    func fetchMovie(_ query: String) -> AnyPublisher<ManyMoviesResponse, NetworkError> {
+        networkService.fetch(ManyMoviesResponse.self, from: .TMDB(route: .searchMovie(query: query)))  //TODO: replace with different route
             .tryMap { data in
                 let decoder = JSONDecoder()
                 do {
-                    return try decoder.decode(Movie.self, from: data)
+                    return try decoder.decode(ManyMoviesResponse.self, from: data)
                 } catch {
                     throw NetworkError.decodingFailure
                 }
@@ -72,24 +73,30 @@ enum TMDBRoute: Route {
     private var apiKey: String {
         APIKeys.movieDBKey
     }//TODO: Change to env. variable later on
+    private var apiParameters: [String: String] {
+        ["api_key": apiKey]
+    }
     
     case popularMovies
-    case movie
-    case gladiatorII
+    case searchMovie(query: String)
+    
     
     var urlPath: String {
         switch self {
         case .popularMovies: return path + "movie/popular"
-        case .movie: return path + "movie/"
-        case .gladiatorII: return path + "movie/558449"
+        case .searchMovie(let query):
+            return path + "search/movie"
         }
     }
     
     var parameters: [String: Any]? {
         switch self {
-        case .popularMovies: return ["api_key": apiKey]
-        case .movie: return nil
-        case .gladiatorII: return ["api_key": apiKey]
+        case .searchMovie(let query):
+            let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+            var params = apiParameters
+            params["query"] = encodedQuery
+            return params
+        case .popularMovies: return apiParameters
         }
     }
 }

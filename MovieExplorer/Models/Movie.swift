@@ -5,7 +5,7 @@
 //  Created by Yohai on 27/12/2024.
 //
 
-import Foundation
+import UIKit
 
 struct Movie: Codable, Hashable {
     let id: Int
@@ -18,6 +18,7 @@ struct Movie: Codable, Hashable {
     let voteAverage: Double
     let genreIds: [Int]
     let backdropPath: String?
+    var posterImage: UIImage? = nil
 
     enum CodingKeys: String, CodingKey {
         case id

@@ -9,7 +9,7 @@ import UIKit
 import Combine
 
 /*/
- TMDb supports various image sizes. Common sizes include:
+ TMDB supports various image sizes. Common sizes include:
  Posters: w92, w154, w185, w342, w500, w780, original
  Backdrops: w300, w780, w1280, original
  Profiles: w45, w185, h632, original
