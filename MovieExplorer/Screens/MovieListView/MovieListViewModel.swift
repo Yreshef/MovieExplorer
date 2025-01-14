@@ -26,7 +26,6 @@ class MovieListViewModel {
     
     private var cancellables = Set<AnyCancellable>()
 
-    
     let movieService: MovieServicing
     let imageService: ImageServicing
     let imageCacheService: any ImageCacheServicing
@@ -99,8 +98,15 @@ class MovieListViewModel {
         }
     }
     
-    private func fetchImage(for movie: Movie) {
+    public func fetchImage(for movie: Movie) {
         guard let posterPath = movie.posterPath else { return }
+        
+        if let cachedImage = imageCacheService.value(forKey: movie.id) {
+            self.images[movie.id] = cachedImage
+            self.notifyImageUpdate(for: movie.id)
+            return
+        }
+        
         imageService.fetchImage(size: "w500", from: posterPath)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] completion in
@@ -112,6 +118,8 @@ class MovieListViewModel {
                 }
             } receiveValue: { [weak self] image in
                 guard let self = self else { return }
+                
+                self.imageCacheService.save(image, forKey: movie.id)
                 
                 self.images[movie.id] = image
                 self.notifyImageUpdate(for: movie.id)

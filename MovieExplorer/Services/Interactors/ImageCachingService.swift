@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol ImageCacheServicing: CacheServicable {
+protocol ImageCacheServicing {
     func value(forKey key: Int) -> UIImage?
     func save(_ value: UIImage, forKey key: Int)
     func removeValue(forKey key: Int)

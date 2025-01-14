@@ -93,7 +93,7 @@ class MovieListViewController: UIViewController {
             .store(in: &cancellables)
         viewModel.imageUpdatePublisher
             .sink { [weak self] movieId in
-                self?.updateCell(for: movieId)
+                self?.updateImageForMovie(movieId: movieId, newImage: self?.viewModel.images[movieId] ?? Images.placeholderPoster)
             }
             .store(in: &cancellables)
     }
@@ -109,6 +109,14 @@ class MovieListViewController: UIViewController {
         }
     }
     
+    private func updateImageForMovie(movieId: Int, newImage: UIImage) {
+        if let index = viewModel.movies.firstIndex(where: { $0.id == movieId }) {
+            viewModel.movies[index].posterImage = newImage
+        }
+        
+        updateSnapshot(with: viewModel.movies)
+    }
+    
     private func updateSnapshot(with movies: [Movie]) {
         var snapshot = NSDiffableDataSourceSnapshot<MovieListSection, Movie>()
         snapshot.appendSections([.movies])
@@ -122,7 +130,6 @@ class MovieListViewController: UIViewController {
     
     private func prepareDetailView(for movie: Movie, with image: UIImage) -> UIHostingController<MovieDetailView> {
         let movieDetailView = MovieDetailView(movie: movie, moviePosterImage: image) {
-            //            self.dismiss(animated: true)
             self.navigationController?.popToRootViewController(animated: true)
         }
         let hostingController = UIHostingController(rootView: movieDetailView)
@@ -146,6 +153,10 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
         }
         let movie = viewModel.movies[indexPath.item]
         cell.configure(with: movie)
+        
+        if viewModel.images[movie.id] == nil {
+            viewModel.fetchImage(for: movie)
+        }
         return cell
     }
     
