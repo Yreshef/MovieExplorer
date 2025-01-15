@@ -22,18 +22,29 @@ final class CoreDataManager: CoreDataManaging {
     
     private let containerName: String = "MEModel"
     
-    private let persistentContainer: NSPersistentContainer
-    private var context: NSManagedObjectContext {
-        return persistentContainer.viewContext
-    }
-    
-    init() {
-        self.persistentContainer = NSPersistentContainer(name: containerName)
+    private lazy var persistentContainer: NSPersistentContainer = {
+        let persistentContainer = NSPersistentContainer(name: containerName)
         persistentContainer.loadPersistentStores{ storeDescription, error in
             if let error = error {
                 fatalError("Failed to load Core Data stack: \(error)")
             }
         }
+        return persistentContainer
+    }()
+    private var context: NSManagedObjectContext {
+        return persistentContainer.viewContext
+    }
+ 
+    
+    init() {
+        registerCustomTransformers()
+    }
+    
+    // MARK: Custom Transformers
+
+    private func registerCustomTransformers() {
+        ValueTransformer.setValueTransformer(GenreIdsTransfomer(),
+                                             forName: NSValueTransformerName("GenreIdsTransfomer"))
     }
     
     private func saveContext() {
