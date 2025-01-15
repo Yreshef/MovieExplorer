@@ -21,7 +21,7 @@ final class DependencyContainer: DependencyContaining {
     internal let networkService: NetworkServicing = NetworkService()
     internal lazy var movieService: MovieServicing = MovieService(networkService: networkService)
     internal lazy var imageService: ImageServicing = ImageService(networkService: networkService)
-    internal let imageCacheService: any ImageCacheServicing = ImageCacheService(cacheService: CacheService<Int, UIImage>())
+    internal let imageCacheService: any ImageCacheServicing = ImageCacheService(cacheService: MemoryCacheManager<Int, UIImage>())
 
     init() { }
 }

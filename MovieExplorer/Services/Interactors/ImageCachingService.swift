@@ -14,7 +14,7 @@ protocol ImageCacheServicing {
     func clearCache()
 }
 
-final class ImageCacheService<CacheType: CacheServicable>: ImageCacheServicing
+final class ImageCacheService<CacheType: MemoryCacheManaging>: ImageCacheServicing
     where CacheType.K == Int, CacheType.T == UIImage {
 
     private let cacheService: CacheType

@@ -1,5 +1,5 @@
 //
-//  CacheService.swift
+//  MemoryCacheManager.swift
 //  MovieExplorer
 //
 //  Created by Yohai on 13/01/2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol CacheServicable {
+protocol MemoryCacheManaging {
     associatedtype K: Hashable
     associatedtype T
     
@@ -17,10 +17,10 @@ protocol CacheServicable {
     func clearCache()
 }
 
-final class CacheService<K: Hashable, T>: CacheServicable {
-    private let cache = NSCache<WrappedKey, Entry>()
+final class MemoryCacheManager<K: Hashable, T>: MemoryCacheManaging {
+    private let cache = NSCache<CacheKey, Entry>()
     
-    private final class WrappedKey: NSObject {
+    private final class CacheKey: NSObject {
         
         let key: K
         override var hash: Int {
@@ -32,7 +32,7 @@ final class CacheService<K: Hashable, T>: CacheServicable {
         }
         
         override func isEqual(_ object: Any?) -> Bool {
-            guard let other = object as? WrappedKey else { return false }
+            guard let other = object as? CacheKey else { return false }
             return other.key == key
         }
     }
@@ -45,16 +45,16 @@ final class CacheService<K: Hashable, T>: CacheServicable {
     }
     
     func value(forKey key: K) -> T? {
-        return cache.object(forKey: WrappedKey(key: key))?.value
+        return cache.object(forKey: CacheKey(key: key))?.value
     }
     
     func save(_ value: T, forKey key: K) {
         let entry = Entry(value: value)
-        cache.setObject(entry, forKey: WrappedKey(key: key))
+        cache.setObject(entry, forKey: CacheKey(key: key))
     }
     
     func removeValue(forKey key: K) {
-        cache.removeObject(forKey: WrappedKey(key: key))
+        cache.removeObject(forKey: CacheKey(key: key))
     }
     
     func clearCache() {
