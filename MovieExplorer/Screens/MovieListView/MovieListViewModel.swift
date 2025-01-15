@@ -13,10 +13,12 @@ enum MovieListState {
     case searchResults
 }
 
+//TODO: Refactor View Model to handle less responsibility, to keep it simpler and easier to maintain
+
 class MovieListViewModel {
     
     @Published var movies: [Movie] = []
-    @Published var state: MovieListState = .popularMovies
+    @Published var state: MovieListState = .popularMovies 
     @Published var updatedMovie: Movie?
     @Published var favorites: [Movie] = []
     @Published var images: [Int: UIImage] = [:]
