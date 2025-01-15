@@ -28,6 +28,7 @@ final class MovieService: MovieServicing {
         networkService.fetch(ManyMoviesResponse.self, from: .TMDB(route: .popularMovies))
             .tryMap { data in
                 let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .formatted(DateFormatter.movieAPIFormatter)
                 do {
                     return try decoder.decode(ManyMoviesResponse.self, from: data)
                 } catch {

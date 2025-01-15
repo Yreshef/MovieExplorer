@@ -11,8 +11,8 @@ extension DateFormatter {
     
     static let movieAPIFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = DateFormat.dateFormat
+        formatter.locale = Locale(identifier: DateFormat.localeIdentifier)
         return formatter
     }()
 }
