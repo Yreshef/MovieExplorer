@@ -16,3 +16,7 @@ protocol PersistenceManaging {
     func saveFavoriteMovies(_ movies: [Movie])
     func removeFavoriteMovie(_ movie: Movie) -> Movie?
 }
+
+final class PersistenceManager {
+    
+}
