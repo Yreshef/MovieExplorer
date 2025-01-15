@@ -13,9 +13,9 @@ protocol CoreDataManaging {
     func saveMovieToCoreData(_ movie: MovieEntity)
     func updateMovieInCoreData(_ movie: MovieEntity)
     func deleteMovieFromCoreData(_ movie: MovieEntity)
-//    func fetchFavoriteMoviesFromCoreData() -> [MovieEntity]
-//    func saveFavoriteMoviesToCoreData(_ movieEntities: [MovieEntity])
-//    func removeFavoriteMovieFromCoreData(_ movie: MovieEntity)
+    func fetchFavoriteMoviesFromCoreData() -> [MovieEntity]
+    func saveFavoriteMoviesToCoreData(_ movieEntities: [MovieEntity])
+    func removeFavoriteMovieFromCoreData(_ movie: MovieEntity)
 }
 
 final class CoreDataManager: CoreDataManaging {
@@ -73,6 +73,7 @@ final class CoreDataManager: CoreDataManaging {
                 existingMovie.genreIds = movie.genreIds
                 existingMovie.posterPath = movie.posterPath
                 existingMovie.backdropPath = movie.backdropPath
+                existingMovie.isFavorite = movie.isFavorite
                 saveContext()
             }
         } catch {
@@ -85,25 +86,26 @@ final class CoreDataManager: CoreDataManaging {
         saveContext()
     }
     
-//    func fetchFavoriteMoviesFromCoreData() -> [MovieEntity] {
-//        let fetchRequest: NSFetchRequest<MovieEntity> = MovieEntity.fetchRequest()
-//        fetchRequest.predicate = NSPredicate(format: "isFavorite == %d", true)
-//        do {
-//            
-//        } catch {
-//
-//        }
-//        return []
-//    }
+    func fetchFavoriteMoviesFromCoreData() -> [MovieEntity] {
+        let fetchRequest: NSFetchRequest<MovieEntity> = MovieEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "isFavorite == %d", true)
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            print("Error fetching favorite movies: \(error)")
+            return []
+        }
+    }
     
-//    func saveFavoriteMoviesToCoreData(_ movieEntities: [MovieEntity]) {
-//        movieEntities.forEach { context.insert($0) }
-//        saveContext()
-//    }
-//    
-//    func removeFavoriteMovieFromCoreData(_ movie: MovieEntity) {
-//        
-//    }
+    func saveFavoriteMoviesToCoreData(_ movieEntities: [MovieEntity]) {
+        movieEntities.forEach { context.insert($0) }
+        saveContext()
+    }
+    
+    func removeFavoriteMovieFromCoreData(_ movie: MovieEntity) {
+        movie.isFavorite = false
+        saveContext()
+    }
     
     
 }

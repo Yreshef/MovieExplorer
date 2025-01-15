@@ -17,6 +17,7 @@ struct Movie: Codable, Hashable {
     let genreIds: [Int]
     let backdropPath: String?
     var posterImage: UIImage? = nil
+    var isFavorite: Bool? = false
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -27,6 +28,7 @@ struct Movie: Codable, Hashable {
         case voteAverage = "vote_average"
         case genreIds = "genre_ids"
         case backdropPath = "backdrop_path"
+        case isFavorite
     }
 }
 
@@ -40,7 +42,8 @@ struct MockData {
         overview: "Years after witnessing the death of the revered hero Maximus at the hands of his uncle, Lucius is forced to enter the Colosseum after his home is conquered by the tyrannical Emperors who now lead Rome with an iron fist. With rage in his heart and the future of the Empire at stake, Lucius must look to his past to find strength and honor to return the glory of Rome to its people.",
         voteAverage: 7.5,  // Example rating
         genreIds: [28, 12, 14], // Action, Adventure, Fantasy genres
-        backdropPath: "/sampleBackdrop.jpg"
+        backdropPath: "/sampleBackdrop.jpg",
+        isFavorite: false
     )
 
     static let mockMovies: [Movie] = [
@@ -52,7 +55,8 @@ struct MockData {
             overview: "A mind-bending thriller about a thief who enters the subconscious to steal secrets.",
             voteAverage: 8.8,
             genreIds: [28, 878, 12], // Action, Science Fiction, Adventure
-            backdropPath: "/path/to/backdrop1.jpg"
+            backdropPath: "/path/to/backdrop1.jpg",
+            isFavorite: false
         ),
         Movie(
             id: 2,
@@ -62,7 +66,8 @@ struct MockData {
             overview: "An ordinary LEGO minifigure is mistaken for the most extraordinary person and is recruited to join a quest to stop an evil tyrant.",
             voteAverage: 7.7,
             genreIds: [35, 16, 10751], // Comedy, Animation, Family
-            backdropPath: "/path/to/backdrop2.jpg"
+            backdropPath: "/path/to/backdrop2.jpg",
+            isFavorite: false
         ),
         Movie(
             id: 3,
@@ -72,7 +77,8 @@ struct MockData {
             overview: "A young couple falls in love, but circumstances and their differing social classes threaten to keep them apart.",
             voteAverage: 7.8,
             genreIds: [10749, 18], // Romance, Drama
-            backdropPath: "/path/to/backdrop3.jpg"
+            backdropPath: "/path/to/backdrop3.jpg",
+            isFavorite: false
         ),
         Movie(
             id: 4,
@@ -82,7 +88,8 @@ struct MockData {
             overview: "Batman faces the Joker, a criminal mastermind who seeks to create chaos and disrupt the city's order.",
             voteAverage: 9.0,
             genreIds: [28, 80, 53], // Action, Crime, Thriller
-            backdropPath: "/path/to/backdrop4.jpg"
+            backdropPath: "/path/to/backdrop4.jpg",
+            isFavorite: false
         )
     ]
 }

@@ -21,6 +21,7 @@ extension MovieEntity {
     @NSManaged public var genreIds: NSObject?
     @NSManaged public var backdropPath: String?
     @NSManaged public var posterImageData: Data?
+    @NSManaged public var isFavorite: Bool?
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<MovieEntity> {
         return NSFetchRequest<MovieEntity>(entityName: "MovieEntity")
@@ -37,6 +38,7 @@ extension MovieEntity {
                 genreIds: genreIds ?? [],
                 backdropPath: backdropPath,
                 posterImage: posterImageData.flatMap { UIImage(data: $0) } // Convert Data to UIImage
+                isFavorite: isFavorite ?? false
             )
         }
 
@@ -50,6 +52,7 @@ extension MovieEntity {
             self.voteAverage = movie.voteAverage
             self.genreIds = movie.genreIds
             self.backdropPath = movie.backdropPath
+            self.isFavorite = movie.isFavorite
             
             // Convert UIImage to Data and save it
             if let posterImage = movie.posterImage {
