@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol PersistenceManaging {
+protocol PersistencyManaging {
     
     var coreDataManager: CoreDataManaging { get }
     
@@ -20,7 +20,7 @@ protocol PersistenceManaging {
     func removeFavoriteMovie(_ movie: Movie) -> Movie?
 }
 
-final class PersistenceManager: PersistenceManaging {
+final class PersistencyManager: PersistencyManaging {
     
     var coreDataManager: CoreDataManaging
     

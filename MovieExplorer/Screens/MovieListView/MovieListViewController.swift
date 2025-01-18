@@ -37,10 +37,8 @@ class MovieListViewController: UIViewController {
     
     // MARK: Init
 
-    init(movieService: MovieServicing, imageService: ImageServicing, imageCacheService: any ImageCacheServicing) {
-        viewModel = MovieListViewModel(movieService: movieService,
-                                       imageService: imageService,
-                                       imageCacheService: imageCacheService)
+    init(_ viewModel: MovieListViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     

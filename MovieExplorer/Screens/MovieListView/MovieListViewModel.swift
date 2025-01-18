@@ -27,15 +27,23 @@ class MovieListViewModel {
     let imageUpdatePublisher = PassthroughSubject<Int, Never>()
     
     private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: Services
 
     let movieService: MovieServicing
     let imageService: ImageServicing
     let imageCacheService: any ImageCacheServicing
+    let persistencyManager: PersistencyManaging
     
-    init(movieService: MovieServicing, imageService: ImageServicing, imageCacheService: any ImageCacheServicing) {
+    init(movieService: MovieServicing,
+         imageService: ImageServicing,
+         imageCacheService: ImageCacheServicing,
+         persistencyManager: PersistencyManaging) {
+        
         self.movieService = movieService
         self.imageService = imageService
         self.imageCacheService = imageCacheService
+        self.persistencyManager = persistencyManager
         setupSearchQueryObject()
         fetchPopularMovies()
     }
