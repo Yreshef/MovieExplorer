@@ -9,13 +9,13 @@ import UIKit
 import CoreData
 
 protocol CoreDataManaging {
-    func fetchMoviesFromCoreData() -> [MovieEntity]
-    func saveMovieToCoreData(_ movie: MovieEntity)
-    func updateMovieInCoreData(_ movie: MovieEntity)
-    func deleteMovieFromCoreData(_ movie: MovieEntity)
-    func fetchFavoriteMoviesFromCoreData() -> [MovieEntity]
-    func saveFavoriteMoviesToCoreData(_ movieEntities: [MovieEntity])
-    func removeFavoriteMovieFromCoreData(_ movie: MovieEntity)
+    func fetchMoviesFromCoreData() -> [Movie]
+    func saveMovieToCoreData(_ movie: Movie)
+    func updateMovieInCoreData(_ movie: Movie)
+    func deleteMovieFromCoreData(_ movie: Movie)
+    func fetchFavoriteMoviesFromCoreData() -> [Movie]
+    func saveFavoriteMoviesToCoreData(_ movies: [Movie])
+    func removeFavoriteMovieFromCoreData(_ movie: Movie)
 }
 
 final class CoreDataManager: CoreDataManaging {
@@ -34,18 +34,75 @@ final class CoreDataManager: CoreDataManaging {
     private var context: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
- 
+    
     
     init() {
         registerCustomTransformers()
     }
     
     // MARK: Custom Transformers
-
+    
     private func registerCustomTransformers() {
         ValueTransformer.setValueTransformer(GenreIdsTransfomer(),
                                              forName: NSValueTransformerName("GenreIdsTransfomer"))
     }
+    
+    // MARK: Public methods
+    
+    public func fetchMoviesFromCoreData() -> [Movie] {
+        let movieEntities = fetchMovieEntities()
+        return movieEntities.map { $0.toMovie() }
+    }
+    
+    public func saveMovieToCoreData(_ movie: Movie) {
+        if let existingEntity = fetchMovieEntity(by: movie.id) {
+            updateMovieEntity(existingEntity, with: movie)
+        } else {
+            let _ = MovieEntity(from: movie, context: context)
+        }
+        saveContext()
+    }
+    
+    public func updateMovieInCoreData(_ movie: Movie) {
+        guard let existingEntity = fetchMovieEntity(by: movie.id) else {
+            print("No movie found to update with ID: \(movie.id)")
+            return
+        }
+        updateMovieEntity(existingEntity, with: movie)
+        saveContext()
+    }
+    
+    public func deleteMovieFromCoreData(_ movie: Movie) {
+        guard let entity = fetchMovieEntity(by: movie.id) else {
+            print("No movie found to delete with ID: \(movie.id)")
+            return
+        }
+        context.delete(entity)
+        saveContext()
+    }
+    
+    public func fetchFavoriteMoviesFromCoreData() -> [Movie] {
+        let favoriteMovieEntities = fetchFavoriteMovieEntities()
+        return favoriteMovieEntities.map { $0.toMovie() }
+    }
+    
+    public func saveFavoriteMoviesToCoreData(_ movies: [Movie]) {
+        movies.forEach { saveMovieToCoreData($0) }
+    }
+    
+    public func removeFavoriteMovieFromCoreData(_ movie: Movie) {
+        guard let entity = fetchMovieEntity(by: movie.id) else {
+            print("No movie found to be removed with ID: \(movie.id)")
+            return
+        }
+        entity.isFavorite = false
+        saveContext()
+    }
+}
+
+// MARK: Private methods
+
+extension CoreDataManager {
     
     private func saveContext() {
         if context.hasChanges {
@@ -57,7 +114,7 @@ final class CoreDataManager: CoreDataManaging {
         }
     }
     
-    func fetchMoviesFromCoreData() -> [MovieEntity] {
+    private func fetchMovieEntities() -> [MovieEntity] {
         let fetchRequest: NSFetchRequest<MovieEntity> = MovieEntity.fetchRequest()
         do {
             return try context.fetch(fetchRequest)
@@ -67,39 +124,20 @@ final class CoreDataManager: CoreDataManaging {
         }
     }
     
-    func saveMovieToCoreData(_ movie: MovieEntity) {
-        context.insert(movie)
-        saveContext()
-    }
-    
-    func updateMovieInCoreData(_ movie: MovieEntity) {
+    private func fetchMovieEntity(by id: Int) -> MovieEntity? {
         let fetchRequest: NSFetchRequest<MovieEntity> = MovieEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %d", movie.id)
-        
+        fetchRequest.predicate = NSPredicate(format: "id == %d", id)
         do {
-            if let existingMovie = try context.fetch(fetchRequest).first {
-                existingMovie.title = movie.title
-                existingMovie.releaseDate = movie.releaseDate
-                existingMovie.voteAverage = movie.voteAverage
-                existingMovie.genreIds = movie.genreIds
-                existingMovie.posterPath = movie.posterPath
-                existingMovie.backdropPath = movie.backdropPath
-                existingMovie.isFavorite = movie.isFavorite
-                saveContext()
-            }
+            return try context.fetch(fetchRequest).first
         } catch {
-            print("Error updating movie: \(error)")
+            print("Error fetching movie by ID: \(error)")
+            return nil
         }
     }
     
-    func deleteMovieFromCoreData(_ movie: MovieEntity) {
-        context.delete(movie)
-        saveContext()
-    }
-    
-    func fetchFavoriteMoviesFromCoreData() -> [MovieEntity] {
+    private func fetchFavoriteMovieEntities() -> [MovieEntity] {
         let fetchRequest: NSFetchRequest<MovieEntity> = MovieEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "isFavorite == %d", true)
+        fetchRequest.predicate = NSPredicate(format: "isFavorite == true")
         do {
             return try context.fetch(fetchRequest)
         } catch {
@@ -108,15 +146,43 @@ final class CoreDataManager: CoreDataManaging {
         }
     }
     
-    func saveFavoriteMoviesToCoreData(_ movieEntities: [MovieEntity]) {
+    private func updateMovieEntity(_ entity: MovieEntity, with movie: Movie) {
+        entity.title = movie.title
+        entity.releaseDate = movie.releaseDate
+        entity.voteAverage = movie.voteAverage
+        entity.posterPath = movie.posterPath
+        entity.backdropPath = movie.backdropPath
+        
+        entity.genreIds = movie.genreIds as NSObject
+        
+        if let isFavorite = movie.isFavorite {
+            entity.isFavorite = isFavorite
+        }
+    }
+}
+
+// MARK: Entry specific methods
+
+extension CoreDataManager {
+    
+    private func saveMovieEntity(_ movie: MovieEntity) {
+        context.insert(movie)
+        saveContext()
+    }
+    
+    private func deleteMovieEntity(_ movie: MovieEntity) {
+        context.delete(movie)
+        saveContext()
+    }
+    
+    private func saveFavoriteMoviesToCoreData(_ movieEntities: [MovieEntity]) {
         movieEntities.forEach { context.insert($0) }
         saveContext()
     }
     
-    func removeFavoriteMovieFromCoreData(_ movie: MovieEntity) {
+    private func removeFavoriteMovieFromCoreData(_ movie: MovieEntity) {
         movie.isFavorite = false
         saveContext()
     }
-    
-    
 }
+
