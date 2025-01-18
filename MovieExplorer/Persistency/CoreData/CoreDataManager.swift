@@ -159,6 +159,25 @@ extension CoreDataManager {
             entity.isFavorite = isFavorite
         }
     }
+    
+    // MARK: Purge local data
+    #if DEBUG
+    func purgeLocalData() {
+        let fetchRequests: [NSFetchRequest<NSFetchRequestResult>] = [
+            MovieEntity.fetchRequest()
+            // Add any other fetch requests you want to purge here
+        ]
+        for fetchRequest in fetchRequests {
+            let deleteRequests = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            do {
+                try context.execute(deleteRequests)
+                saveContext()
+            } catch {
+                print("Error purging local data: \(error)")
+            }
+        }
+    }
+    #endif
 }
 
 // MARK: Entry specific methods
