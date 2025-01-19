@@ -22,8 +22,8 @@ final class MovieListViewControllerFactory {
     
     private func createMovieListViewModel() -> MovieListViewModel {
         let movieRespoitory: MovieRepositoryProtocol = MovieRepository(movieService: container.movieService)
+        let imageRepository: ImageRepositoryProtocol = ImageRepository(imageService: container.imageService, imageCacheService: container.imageCacheService)
         return MovieListViewModel(movieRepository: movieRespoitory,
-                                  imageService: container.imageService,
-                                  persistencyManager: container.persistencyManager)
+                                  imageRepository: imageRepository)
     }
 }
