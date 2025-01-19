@@ -11,14 +11,18 @@ import Combine
 protocol MovieServicing {
     var networkService: NetworkServicing { get }
     
-//    func fetchMovie() -> AnyPublisher<Movie, NetworkError>
     func fetchPopularMovies() -> AnyPublisher<ManyMoviesResponse, NetworkError>
-    func fetchMovie(_ query: String) -> AnyPublisher<ManyMoviesResponse, NetworkError>
+    func fetchMovies(_ query: String) -> AnyPublisher<ManyMoviesResponse, NetworkError>
 }
 
 final class MovieService: MovieServicing {
     
     let networkService: NetworkServicing
+    let decoder: JSONDecoder = {
+       let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .formatted(DateFormatter.movieAPIFormatter)
+        return decoder
+    }()
     
     init(networkService: NetworkServicing) {
         self.networkService = networkService
@@ -27,10 +31,8 @@ final class MovieService: MovieServicing {
     func fetchPopularMovies() -> AnyPublisher<ManyMoviesResponse, NetworkError> {
         networkService.fetch(ManyMoviesResponse.self, from: .TMDB(route: .popularMovies))
             .tryMap { data in
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .formatted(DateFormatter.movieAPIFormatter)
                 do {
-                    return try decoder.decode(ManyMoviesResponse.self, from: data)
+                    return try self.decoder.decode(ManyMoviesResponse.self, from: data)
                 } catch {
                     throw NetworkError.decodingFailure
                 }
@@ -45,12 +47,11 @@ final class MovieService: MovieServicing {
             .eraseToAnyPublisher()
     }
     
-    func fetchMovie(_ query: String) -> AnyPublisher<ManyMoviesResponse, NetworkError> {
-        networkService.fetch(ManyMoviesResponse.self, from: .TMDB(route: .searchMovie(query: query)))  //TODO: replace with different route
+    func fetchMovies(_ query: String) -> AnyPublisher<ManyMoviesResponse, NetworkError> {
+        networkService.fetch(ManyMoviesResponse.self, from: .TMDB(route: .searchMovies(query: query)))
             .tryMap { data in
-                let decoder = JSONDecoder()
                 do {
-                    return try decoder.decode(ManyMoviesResponse.self, from: data)
+                    return try self.decoder.decode(ManyMoviesResponse.self, from: data)
                 } catch {
                     throw NetworkError.decodingFailure
                 }
@@ -79,20 +80,20 @@ enum TMDBRoute: Route {
     }
     
     case popularMovies
-    case searchMovie(query: String)
+    case searchMovies(query: String)
     
     
     var urlPath: String {
         switch self {
         case .popularMovies: return path + "movie/popular"
-        case .searchMovie(let query):
+        case .searchMovies:
             return path + "search/movie"
         }
     }
     
     var parameters: [String: Any]? {
         switch self {
-        case .searchMovie(let query):
+        case .searchMovies(let query):
             let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
             var params = apiParameters
             params["query"] = encodedQuery

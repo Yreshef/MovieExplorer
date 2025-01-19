@@ -152,9 +152,9 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
         let movie = viewModel.movies[indexPath.item]
         cell.configure(with: movie)
         
-        if viewModel.images[movie.id] == nil {
-            viewModel.fetchImage(for: movie)
-        }
+//        if viewModel.images[movie.id] == nil {
+//            viewModel.fetchImage(for: movie)
+//        }
         return cell
     }
     

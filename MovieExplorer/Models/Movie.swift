@@ -18,7 +18,7 @@ struct Movie: Codable, Hashable {
     let backdropPath: String?
     var posterImage: UIImage? = nil
     var isFavorite: Bool? = false
-
+    
     enum CodingKeys: String, CodingKey {
         case id
         case posterPath = "poster_path"
@@ -32,6 +32,39 @@ struct Movie: Codable, Hashable {
     }
 }
 
+extension Movie {
+    
+    //// Decodes an instance of `Movie` from a given decoder.
+    ///
+    /// This initializer attempts to decode all properties of the `Movie` struct
+    /// from the provided decoder. If the `release_date` field is not present or cannot
+    /// be parsed into a valid `Date`, the `releaseDate` property will be set to `nil`.
+    /// Similarly, optional properties like `posterPath` and `backdropPath` will be set
+    /// to `nil` if their values are not present or are invalid.
+    ///
+    /// - Parameter decoder: The `Decoder` instance to decode data from.
+    /// - Throws: An error if required properties are missing or if decoding fails.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        posterPath = try? container.decode(String?.self, forKey: .posterPath)
+        title = try container.decode(String.self, forKey: .title)
+        overview = try container.decode(String.self, forKey: .overview)
+        voteAverage = try container.decode(Double.self, forKey: .voteAverage)
+        genreIds = try container.decode([Int].self, forKey: .genreIds)
+        backdropPath = try? container.decode(String?.self, forKey: .backdropPath)
+        posterImage = nil
+        isFavorite = nil
+        
+        // Safely decode releaseDate
+        if let dateString = try? container.decode(String.self, forKey: .releaseDate),
+           !dateString.isEmpty {
+            releaseDate = DateFormatter.movieAPIFormatter.date(from: dateString)
+        } else {
+            releaseDate = nil
+        }
+    }
+}
 
 struct MockData {
     static let sampleMovie: Movie = .init(
@@ -45,7 +78,7 @@ struct MockData {
         backdropPath: "/sampleBackdrop.jpg",
         isFavorite: false
     )
-
+    
     static let mockMovies: [Movie] = [
         Movie(
             id: 1,

@@ -19,7 +19,6 @@ class MovieListViewModel {
     
     @Published var movies: [Movie] = []
     @Published var state: MovieListState = .popularMovies 
-    @Published var updatedMovie: Movie?
     @Published var favorites: [Movie] = []
     @Published var images: [Int: UIImage] = [:]
     
@@ -30,22 +29,34 @@ class MovieListViewModel {
     
     // MARK: Services
 
-    let movieService: MovieServicing
+    let movieRepository: MovieRepositoryProtocol
     let imageService: ImageServicing
-    let imageCacheService: any ImageCacheServicing
     let persistencyManager: PersistencyManaging
     
-    init(movieService: MovieServicing,
+    init(movieRepository: MovieRepositoryProtocol,
          imageService: ImageServicing,
-         imageCacheService: ImageCacheServicing,
          persistencyManager: PersistencyManaging) {
-        
-        self.movieService = movieService
+        self.movieRepository = movieRepository
         self.imageService = imageService
-        self.imageCacheService = imageCacheService
         self.persistencyManager = persistencyManager
         setupSearchQueryObject()
         fetchPopularMovies()
+    }
+    
+    public func fetchPopularMovies() {
+        movieRepository.getPopularMovies()
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished: break
+                case .failure(let error): print("An error has occured: \(error)")
+                }
+            }, receiveValue: { [weak self] movies in
+                self?.state = .popularMovies
+                self?.movies = movies.results
+//                self.fetchImage(for: movies.results)
+            })
+            .store(in: &cancellables)
     }
     
     private func setupSearchQueryObject() {
@@ -63,18 +74,17 @@ class MovieListViewModel {
             fetchPopularMovies()
             return
         }
-        movieService.fetchMovie(query)
-            .sink(receiveCompletion: { completion in
+        movieRepository.searchMovies(query: query)
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
                 switch completion {
-                case .failure(let error):
-                    print("Error searching movies: \(error)")
-                case .finished:
-                    break
+                case .finished: break
+                case .failure(let error): print("Error searching movies: \(error)")
                 }
-            }, receiveValue: { [weak self] movies in
+            } receiveValue: { [weak self] movies in
                 self?.state = .searchResults
                 self?.movies = movies.results
-            })
+            }
             .store(in: &cancellables)
     }
     
@@ -82,72 +92,46 @@ class MovieListViewModel {
         searchQuerySubject.send(query)
     }
     
-    public func fetchPopularMovies() {
-        self.movieService.fetchPopularMovies()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    print("An error has occured: \(error)")
-                }
-            } receiveValue: { [weak self] movies in
-                self?.state = .popularMovies
-                self?.movies = movies.results
-                self?.fetchImage(for: movies.results)
-            }
-            .store(in: &cancellables)
-    }
-    
-    func toggleFavorites(movie: Movie) {
-        if favorites.contains(where: { $0.id == movie.id }) {
-            favorites.removeAll { $0.id == movie.id }
-        } else {
-            favorites.append(movie)
-        }
-    }
-    
-    public func fetchImage(for movie: Movie) {
-        guard let posterPath = movie.posterPath else { return }
-        
-        if let cachedImage = imageCacheService.value(forKey: movie.id) {
-            self.images[movie.id] = cachedImage
-            self.notifyImageUpdate(for: movie.id)
-            return
-        }
-        
-        imageService.fetchImage(size: "w500", from: posterPath)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    print("An error has occured: \(error)")
-                }
-            } receiveValue: { [weak self] image in
-                guard let self = self else { return }
-                
-                self.imageCacheService.save(image, forKey: movie.id)
-                
-                self.images[movie.id] = image
-                self.notifyImageUpdate(for: movie.id)
-            }
-            .store(in: &cancellables)
-    }
+//    public func fetchImage(for movie: Movie) {
+//        guard let posterPath = movie.posterPath else { return }
+//        
+//        if let cachedImage = imageCacheService.value(forKey: movie.id) {
+//            self.images[movie.id] = cachedImage
+//            self.notifyImageUpdate(for: movie.id)
+//            return
+//        }
+//        
+//        imageService.fetchImage(size: "w500", from: posterPath)
+//            .receive(on: DispatchQueue.main)
+//            .sink { [weak self] completion in
+//                switch completion {
+//                case .finished:
+//                    break
+//                case .failure(let error):
+//                    print("An error has occured: \(error)")
+//                }
+//            } receiveValue: { [weak self] image in
+//                guard let self = self else { return }
+//                
+//                self.imageCacheService.save(image, forKey: movie.id)
+//                
+//                self.images[movie.id] = image
+//                self.notifyImageUpdate(for: movie.id)
+//            }
+//            .store(in: &cancellables)
+//    }
     
     private func notifyImageUpdate(for movieID: Int) {
         imageUpdatePublisher.send(movieID)
     }
     
-    private func fetchImage(for movies: [Movie]) {
-        for movie in movies {
-            fetchImage(for: movie)
-        }
-    }
+//    private func fetchImage(for movies: [Movie]) {
+//        for movie in movies {
+//            fetchImage(for: movie)
+//        }
+//    }
     
-    func fetchMockData() {
-        movies = MockData.mockMovies
-    }
+//    func fetchMockData() {
+//        movies = MockData.mockMovies
+//    }
 }
