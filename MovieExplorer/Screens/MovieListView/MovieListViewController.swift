@@ -122,10 +122,6 @@ class MovieListViewController: UIViewController {
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    private func fetchPopularmovies() {
-        viewModel.fetchPopularMovies()
-    }
-    
     private func prepareDetailView(for movie: Movie, with image: UIImage) -> UIHostingController<MovieDetailView> {
         let movieDetailView = MovieDetailView(movie: movie, moviePosterImage: image) {
             self.navigationController?.popToRootViewController(animated: true)

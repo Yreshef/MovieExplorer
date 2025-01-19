@@ -22,6 +22,8 @@ class MovieListViewModel {
     @Published var state: MovieListState = .loading
     
     private var searchQuerySubject = PassthroughSubject<String, Never>()
+    private var searchCancellable: AnyCancellable?
+
     let imageUpdatePublisher = PassthroughSubject<Int, Never>()
     
     private var cancellables = Set<AnyCancellable>()
@@ -41,7 +43,7 @@ class MovieListViewModel {
         fetchPopularMovies()
     }
     
-    // MARK: Methods
+    // MARK: Public Methods
     
     public func fetchPopularMovies() {
         movieRepository.getPopularMovies()
@@ -58,17 +60,6 @@ class MovieListViewModel {
                 self?.movies = movies.results
 
                 self?.fetchImages(for: movies.results)
-            })
-            .store(in: &cancellables)
-    }
-    
-    private func setupSearchQueryObject() {
-        searchQuerySubject
-            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-            .removeDuplicates() // Avoid duplicate requests if the query hasn't changed
-            .sink(receiveValue: { [weak self] query in
-                
-                self?.searchMovie(query: query)
             })
             .store(in: &cancellables)
     }
@@ -94,10 +85,6 @@ class MovieListViewModel {
             .store(in: &cancellables)
     }
     
-    public func updateSearchQuery(query: String) {
-        searchQuerySubject.send(query)
-    }
-    
     public func fetchImages(for movies: [Movie]) {
         let missingMovies = movies.filter { images[$0.id] == nil }
         
@@ -118,25 +105,59 @@ class MovieListViewModel {
         })
         .store(in: &cancellables)
     }
-
     
-    public func fetchImage(for movie: Movie) {
-        imageRepository.fetchImage(for: movie)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
-                switch completion {
-                case .finished: break
-                case .failure(let error): print("An error has occured: \(error)")
-                }
-            }, receiveValue: { [weak self] image in
-                self?.images[movie.id] = image
-                self?.notifyImageUpdate(for: movie.id)
+    public func updateSearchQuery(query: String) {
+        searchQuerySubject.send(query)
+    }
+    
+    public func clearSearchResults() {
+        updateSearchQuery(query: "")
+    }
+    
+    // MARK: Private Helper Methods
+    
+    private func notifyImageUpdate(for movieID: Int) {
+        imageUpdatePublisher.send(movieID)
+    }
+
+    private func setupSearchQueryObject() {
+        searchQuerySubject
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
+            .removeDuplicates() // Avoid duplicate requests if the query hasn't changed
+            .sink(receiveValue: { [weak self] query in
+                
+                self?.handleSearchQueryChange(for: query)
             })
             .store(in: &cancellables)
     }
     
-    private func notifyImageUpdate(for movieID: Int) {
-        imageUpdatePublisher.send(movieID)
+    private func handleSearchQueryChange(for query: String) {
+        if query.isEmpty {
+            clearSearch()
+            return
+        }
+        
+        searchCancellable?.cancel()
+        
+        searchCancellable = movieRepository.searchMovies(query: query)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished: break
+                case .failure(let error): print("Error searching movies: \(error)")
+                }
+            }, receiveValue: { [weak self] movies in
+                self?.state = .searchResults
+                self?.movies = movies.results
+                self?.fetchImages(for: movies.results)
+            })
+    }
+    
+    private func clearSearch() {
+        searchCancellable?.cancel()
+        searchCancellable = nil
+        
+        fetchPopularMovies()
     }
     
 #if DEBUG
