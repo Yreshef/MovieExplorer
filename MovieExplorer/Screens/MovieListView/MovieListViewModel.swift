@@ -27,7 +27,7 @@ class MovieListViewModel {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: Services
-
+    
     let movieRepository: MovieRepositoryProtocol
     let imageRepository: ImageRepositoryProtocol
     
@@ -56,14 +56,15 @@ class MovieListViewModel {
             }, receiveValue: { [weak self] movies in
                 self?.state = .popularMovies
                 self?.movies = movies.results
-                self?.fetchImage(for: movies.results)
+
+                self?.fetchImages(for: movies.results)
             })
             .store(in: &cancellables)
     }
     
     private func setupSearchQueryObject() {
         searchQuerySubject
-            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main) 
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
             .removeDuplicates() // Avoid duplicate requests if the query hasn't changed
             .sink(receiveValue: { [weak self] query in
                 self?.searchMovie(query: query)
@@ -86,7 +87,8 @@ class MovieListViewModel {
             } receiveValue: { [weak self] movies in
                 self?.state = .searchResults
                 self?.movies = movies.results
-                self?.fetchImage(for: movies.results)
+                
+                self?.fetchImages(for: movies.results)
             }
             .store(in: &cancellables)
     }
@@ -94,6 +96,36 @@ class MovieListViewModel {
     public func updateSearchQuery(query: String) {
         searchQuerySubject.send(query)
     }
+    
+    public func fetchImages(for movies: [Movie]) {
+        
+        let missingMovies = movies.filter { images[$0.id] == nil }
+
+        let imageFetchPublisher = missingMovies.map { movie in
+            self.imageRepository.fetchImage(for: movie)
+                .catch { error in
+                    Just(Images.placeholderPoster)
+                }
+                .handleEvents(receiveOutput: { [weak self] image in
+                    // Update the image on the main thread
+                    DispatchQueue.main.async {
+                        self?.images[movie.id] = image
+                        self?.notifyImageUpdate(for: movie.id)
+                    }
+                })
+        }
+
+        // Merge all publishers into one stream and subscribe to it
+        Publishers.MergeMany(imageFetchPublisher)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished: break
+                case .failure(let error): print("Error fetching images: \(error)")
+                }
+            }, receiveValue: { _ in })
+            .store(in: &cancellables)
+    }
+
     
     public func fetchImage(for movie: Movie) {
         imageRepository.fetchImage(for: movie)
@@ -112,12 +144,6 @@ class MovieListViewModel {
     
     private func notifyImageUpdate(for movieID: Int) {
         imageUpdatePublisher.send(movieID)
-    }
-    
-    private func fetchImage(for movies: [Movie]) {
-        for movie in movies {
-            fetchImage(for: movie)
-        }
     }
     
 #if DEBUG
