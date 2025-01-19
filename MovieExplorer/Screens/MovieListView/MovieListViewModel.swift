@@ -67,6 +67,7 @@ class MovieListViewModel {
             .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
             .removeDuplicates() // Avoid duplicate requests if the query hasn't changed
             .sink(receiveValue: { [weak self] query in
+                
                 self?.searchMovie(query: query)
             })
             .store(in: &cancellables)
@@ -98,32 +99,24 @@ class MovieListViewModel {
     }
     
     public func fetchImages(for movies: [Movie]) {
-        
         let missingMovies = movies.filter { images[$0.id] == nil }
-
-        let imageFetchPublisher = missingMovies.map { movie in
+        
+        Publishers.MergeMany(missingMovies.map { movie in
             self.imageRepository.fetchImage(for: movie)
-                .catch { error in
-                    Just(Images.placeholderPoster)
-                }
-                .handleEvents(receiveOutput: { [weak self] image in
-                    // Update the image on the main thread
-                    DispatchQueue.main.async {
-                        self?.images[movie.id] = image
-                        self?.notifyImageUpdate(for: movie.id)
-                    }
-                })
-        }
-
-        // Merge all publishers into one stream and subscribe to it
-        Publishers.MergeMany(imageFetchPublisher)
-            .sink(receiveCompletion: { completion in
-                switch completion {
-                case .finished: break
-                case .failure(let error): print("Error fetching images: \(error)")
-                }
-            }, receiveValue: { _ in })
-            .store(in: &cancellables)
+                .catch { _ in Just(Images.placeholderPoster) }
+                .map { (movie.id, $0 ) }
+        })
+        .receive(on: DispatchQueue.main)
+        .sink(receiveCompletion: { completion in
+            switch completion {
+            case .finished: break
+            case .failure(let error): print("Error fetching images: \(error)")
+            }
+        }, receiveValue: { [weak self] (movieID, image) in
+            self?.images[movieID] = image
+            self?.notifyImageUpdate(for: movieID)
+        })
+        .store(in: &cancellables)
     }
 
     
