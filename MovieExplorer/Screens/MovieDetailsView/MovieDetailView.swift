@@ -47,7 +47,7 @@ struct MovieDetailView: View {
     }
 }
 
-//#Preview {
-//    MovieDetailView(movie: MockData.sampleMovie, moviePosterImage: Images.placeholderPoster, dismissAction: { })
-//        .environment(\.colorScheme, .dark)
-//}
+#Preview {
+    MovieDetailView(movie: MockData.sampleMovie, moviePosterImage: Images.placeholderPoster, dismissAction: { })
+        .environment(\.colorScheme, .dark)
+}
