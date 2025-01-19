@@ -11,13 +11,15 @@ import Combine
 enum MovieListState {
     case popularMovies
     case searchResults
+    case loading
+    case empty
 }
 
 class MovieListViewModel {
     
     @Published var movies: [Movie] = []
     @Published var images: [Int: UIImage] = [:]
-    @Published var state: MovieListState = .popularMovies
+    @Published var state: MovieListState = .loading
     
     private var searchQuerySubject = PassthroughSubject<String, Never>()
     let imageUpdatePublisher = PassthroughSubject<Int, Never>()
@@ -44,10 +46,12 @@ class MovieListViewModel {
     public func fetchPopularMovies() {
         movieRepository.getPopularMovies()
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
+            .sink(receiveCompletion: { [weak self] completion in
                 switch completion {
                 case .finished: break
-                case .failure(let error): print("An error has occured: \(error)")
+                case .failure(let error):
+                    self?.state = .empty
+                    print("An error has occured: \(error)")
                 }
             }, receiveValue: { [weak self] movies in
                 self?.state = .popularMovies
