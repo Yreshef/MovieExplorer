@@ -23,7 +23,7 @@ class MovieListViewModel {
     
     private var searchQuerySubject = PassthroughSubject<String, Never>()
     private var searchCancellable: AnyCancellable?
-
+    
     let imageUpdatePublisher = PassthroughSubject<Int, Never>()
     
     private var cancellables = Set<AnyCancellable>()
@@ -58,7 +58,7 @@ class MovieListViewModel {
             }, receiveValue: { [weak self] movies in
                 self?.state = .popularMovies
                 self?.movies = movies.results
-
+                
                 self?.fetchImages(for: movies.results)
             })
             .store(in: &cancellables)
@@ -66,23 +66,11 @@ class MovieListViewModel {
     
     public func searchMovie(query: String) {
         if query.isEmpty {
-            fetchPopularMovies()
+            clearSearchResults()
             return
         }
-        movieRepository.searchMovies(query: query)
-            .receive(on: DispatchQueue.main)
-            .sink { completion in
-                switch completion {
-                case .finished: break
-                case .failure(let error): print("Error searching movies: \(error)")
-                }
-            } receiveValue: { [weak self] movies in
-                self?.state = .searchResults
-                self?.movies = movies.results
-                
-                self?.fetchImages(for: movies.results)
-            }
-            .store(in: &cancellables)
+        
+        handleSearchQueryChange(for: query)
     }
     
     public func fetchImages(for movies: [Movie]) {
@@ -111,15 +99,20 @@ class MovieListViewModel {
     }
     
     public func clearSearchResults() {
-        updateSearchQuery(query: "")
+        if !movies.isEmpty {
+            fetchPopularMovies()
+        }
+        movies = []
+        fetchImages(for: movies)
     }
     
     // MARK: Private Helper Methods
     
+    
     private func notifyImageUpdate(for movieID: Int) {
         imageUpdatePublisher.send(movieID)
     }
-
+    
     private func setupSearchQueryObject() {
         searchQuerySubject
             .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)

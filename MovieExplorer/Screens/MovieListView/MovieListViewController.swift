@@ -19,7 +19,7 @@ class MovieListViewController: UIViewController {
     var dataSource: UICollectionViewDiffableDataSource<MovieListSection, Movie>!
     
     private var cancellables = Set<AnyCancellable>()
-
+    
     private let searchController = UISearchController(searchResultsController: nil)
     
     lazy var collectionView: UICollectionView = {
@@ -36,7 +36,7 @@ class MovieListViewController: UIViewController {
     }()
     
     // MARK: Init
-
+    
     init(_ viewModel: MovieListViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -148,9 +148,6 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
         let movie = viewModel.movies[indexPath.item]
         cell.configure(with: movie)
         
-//        if viewModel.images[movie.id] == nil {
-//            viewModel.fetchImage(for: movie)
-//        }
         return cell
     }
     
@@ -166,10 +163,13 @@ extension MovieListViewController: UICollectionViewDataSource, UICollectionViewD
 
 extension MovieListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        guard let query = searchController.searchBar.text,
-              !query.isEmpty else {
-            return
-              }
+        guard let query = searchController.searchBar.text else { return }
+        
+//        if query.isEmpty {
+//            viewModel.clearSearchResults()  // Clear the results and load popular movies
+//        } else {
+//            viewModel.updateSearchQuery(query: query)  // Trigger search with the current query
+//        }
         viewModel.updateSearchQuery(query: query)
     }
 }
